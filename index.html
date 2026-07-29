@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الهجمات السيبرانية - Eng. Hussein Ghalib</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+
+    <div id="terminalOverlay">
+        <div class="terminal-header">
+            <div>
+                <div class="terminal-title" id="terminalTitle">🖥️ محاكاة الهجوم السيبراني</div>
+                <div class="sim-progress-container">
+                    <div class="sim-progress-fill" id="simProgress"></div>
+                </div>
+            </div>
+            <button class="terminal-close" onclick="closeSimulation()">إيقاف المحاكاة ✕</button>
+        </div>
+        <div class="terminal-body" id="terminalBody"></div>
+    </div>
+
+    <button class="presentation-exit" onclick="togglePresentation()">✕ خروج من العرض</button>
+
+    <div class="particles" id="particles"></div>
+    <div class="bg-animation"></div>
+    <div class="grid-overlay"></div>
+
+    <header>
+        <h1 class="glitch-text" data-text="الهجمات السيبرانية">الهجمات السيبرانية</h1>
+        <p class="subtitle" id="typewriterSubtitle"><span class="cursor"></span></p>
+
+        <div class="author-badge">
+            Eng : Hussein Ghalib
+        </div>
+
+        <div id="userBadge" class="user-badge"></div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-number" id="totalAttacks">0</span>
+                <div class="stat-label">هجوم مسجل</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="totalYears">0</span>
+                <div class="stat-label">سنة تغطية</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="totalTypes">0</span>
+                <div class="stat-label">نوع هجوم</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="charts-section" id="chartsSection">
+        <div class="chart-card">
+            <div class="chart-title">📊 توزيع الهجمات حسب السنة</div>
+            <div id="yearChart" class="css-chart"></div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">🎯 توزيع أنواع الهجمات</div>
+            <div id="typeChart" class="pie-chart"></div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">⚠️ مستويات الخطورة</div>
+            <div id="severityChart" class="pie-chart"></div>
+        </div>
+    </div>
+
+    <div class="search-box">
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍 ابحث عن هجوم بالاسم، الوصف، الجهة المتأثرة..." oninput="handleSearch()">
+    </div>
+
+    <div class="control-panel" id="controlPanel">
+        <!-- Buttons will be injected by JS based on user role -->
+    </div>
+
+    <div class="filters" id="filters">
+        <button class="filter-btn active" data-filter="all" onclick="filterAttacks('all')">الكل</button>
+    </div>
+
+    <div class="timeline-container" id="timeline">
+        <div class="timeline-line"></div>
+        <div id="timelineContent">
+            <div class="empty-state">
+                <div class="empty-state-icon">📭</div>
+                <h3>لا توجد هجمات مسجلة</h3>
+                <p>اضغط على "إضافة هجوم جديد" لبدء إضافة بحوثك</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="formModal" onclick="closeForm(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 id="formTitle">إضافة هجوم جديد</h2>
+                <button class="modal-close" onclick="closeForm()">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="attackForm" onsubmit="saveAttack(event)">
+                    <input type="hidden" id="attackId">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>📛 اسم الهجوم *</label>
+                            <input type="text" id="attackName" required placeholder="مثال: هجوم Colonial Pipeline">
+                        </div>
+                        <div class="form-group">
+                            <label>📅 السنة *</label>
+                            <input type="number" id="attackYear" required min="2000" max="2030" placeholder="2025">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>🏷️ نوع الهجوم *</label>
+                            <select id="attackType" required>
+                                <option value="ransomware">برمجية فدية (Ransomware)</option>
+                                <option value="supply">سلسلة توريد (Supply Chain)</option>
+                                <option value="vulnerability">ثغرة أمنية (Vulnerability)</option>
+                                <option value="social">هندسة اجتماعية (Social Engineering)</option>
+                                <option value="crypto">عملات رقمية (Crypto)</option>
+                                <option value="ddos">حجب خدمة (DDoS)</option>
+                                <option value="other">أخرى</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>⚠️ مستوى الخطورة *</label>
+                            <select id="attackSeverity" required>
+                                <option value="critical">حرج (Critical)</option>
+                                <option value="high">عالي (High)</option>
+                                <option value="medium">متوسط (Medium)</option>
+                                <option value="low">منخفض (Low)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>👤 المجموعة المنفذة</label>
+                            <input type="text" id="attackGroup" placeholder="مثال: ALPHV / BlackCat">
+                        </div>
+                        <div class="form-group">
+                            <label>🌍 أصل المجموعة</label>
+                            <input type="text" id="attackGroupOrigin" placeholder="مثال: روسيا / الصين / مجهول">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🖼️ صورة الهجوم</label>
+                        <div class="image-upload-area" id="uploadArea">
+                            <input type="file" id="attackImage" accept="image/*" onchange="handleImageSelect(event)">
+                            <img id="imagePreview" class="upload-preview" alt="Preview">
+                            <div class="upload-placeholder" id="uploadPlaceholder">
+                                <span class="icon">📷</span>
+                                <div>اضغط لرفع صورة أو اسحب الصورة هنا</div>
+                                <div style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.6;">(PNG, JPG, GIF - max 2MB)</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="attackImageData">
+                    </div>
+
+                    <div class="form-group">
+                        <label>📝 وصف مختصر *</label>
+                        <textarea id="attackDesc" required placeholder="وصف موجز للهجوم وآليته..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📊 التفاصيل الكاملة</label>
+                        <textarea id="attackDetails" rows="5" placeholder="التاريخ، الجهة المنفذة، الآلية، الأثر، الدروس المستفادة..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🛡️ الإجراءات الوقائية (بند لكل سطر)</label>
+                        <textarea id="attackCountermeasures" rows="3" placeholder="تفعيل MFA&#10;تدريب الموظفين&#10;تجزئة الشبكة"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🔗 المصادر (رابط في كل سطر)</label>
+                        <textarea id="attackSources" rows="3" placeholder="https://example.com/article1&#10;https://example.com/article2"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>🏢 الجهة المتأثرة</label>
+                            <input type="text" id="attackTarget" placeholder="مثال: Colonial Pipeline - أمريكا">
+                        </div>
+                        <div class="form-group">
+                            <label>💰 الخسائر / التأثير</label>
+                            <input type="text" id="attackImpact" placeholder="مثال: 4.4 مليون دولار فدية">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn" onclick="closeForm()">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">💾 حفظ الهجوم</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="detailModal" onclick="closeDetail(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 id="detailTitle">التفاصيل</h2>
+                <button class="modal-close" onclick="closeDetail()">✕</button>
+            </div>
+            <div class="modal-body" id="detailBody"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <div class="copy-tooltip" id="copyTooltip">✅ تم نسخ الرابط!</div>
+    <div class="scroll-top" id="scrollTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</div>
+
+    <footer>
+        <div class="footer-glow"></div>
+        <div class="footer-author">
+            <span>👨‍💻</span>
+            <span>Eng : Hussein Ghalib</span>
+        </div>
+        <div class="footer-copyright">
+            إعداد | حسين غالب المدهش   |   إشراف | د/فهد القاسم
+        </div>
+        <div class="footer-social">
+            <a href="#" class="social-icon" title="GitHub" target="_blank" rel="noopener noreferrer">🐙</a>
+            <a href="https://instagram.com/x5ecl" class="social-icon" title="Instagram" target="_blank" rel="noopener noreferrer">💼</a>
+            <a href="https://t.me/x5ecl" class="social-icon" title="Telegram" target="_blank" rel="noopener noreferrer">🐦</a>
+            <a href="https://wa.me/967734556599" class="social-icon" title="WhatsApp" target="_blank" rel="noopener noreferrer">✉️</a>
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
